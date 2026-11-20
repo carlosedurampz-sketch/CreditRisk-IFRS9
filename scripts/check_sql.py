@@ -29,7 +29,8 @@ def load_csv(conn: sqlite3.Connection, table: str, path: Path) -> int:
     if not rows:
         return 0
     cols = list(rows[0].keys())
-    conn.execute(f"CREATE TABLE {table} ({', '.join(f'\"{c}\" TEXT' for c in cols)})")
+    quoted_cols = ", ".join(f'"{c}" TEXT' for c in cols)
+    conn.execute(f"CREATE TABLE {table} ({quoted_cols})")
     conn.executemany(
         f"INSERT INTO {table} VALUES ({', '.join('?' * len(cols))})",
         [[r[c] for c in cols] for r in rows],
