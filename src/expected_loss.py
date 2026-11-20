@@ -44,7 +44,7 @@ SCENARIOS = {
 }
 
 
-def estimate_lgd_by_grade(loans: pd.DataFrame) -> pd.Series:
+def estimate_lgd_by_grade(loans: pd.DataFrame) -> tuple[pd.Series, float]:
     """Mean realised LGD per grade on defaulted loans; global mean as fallback."""
     defaulted = loans[loans["default_12m"] == 1]
     lgd = defaulted.groupby("grade")["lgd_realised"].mean()
@@ -88,7 +88,7 @@ def stress_table(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def run(loans_path: Path, predictions_path: Path, snapshots_path: Path | None,
-        outputs: Path) -> dict:
+        outputs: Path) -> dict[str, object]:
     outputs.mkdir(parents=True, exist_ok=True)
     loans = pd.read_csv(loans_path)
     preds = pd.read_csv(predictions_path)
