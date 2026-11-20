@@ -23,17 +23,12 @@
 --   whose curve sits clearly above its neighbours at the same MOB is
 --   a candidate for an underwriting review.
 --
--- NOTE ON MY SQL LEVEL (honest note, see README "About the author"):
---   I am strengthening SQL with this project. The queries below use
---   window functions (SUM() OVER ... / LAG()) and CTEs deliberately,
---   and every step is commented so a reviewer can follow the logic.
---   They run on SQLite, PostgreSQL and DuckDB with no changes, and
---   the Python pipeline validates the same numbers with pandas.
+-- Compatibility: runs unchanged on SQLite, PostgreSQL and DuckDB. The
+-- Python pipeline cross-validates the same figures with pandas.
 -- ============================================================================
 
 -- --- Step 1: one row per (vintage, MOB) with bucket counts -------------------
--- COUNT(*) FILTER (WHERE ...) counts only rows matching the condition;
--- it is clearer than SUM(CASE WHEN ... THEN 1 ELSE 0 END) for this.
+-- COUNT(*) FILTER (WHERE ...) counts only rows matching the condition.
 WITH monthly AS (
     SELECT
         s.origination_month,
@@ -46,9 +41,7 @@ WITH monthly AS (
 ),
 
 -- --- Step 2: rates + cumulative 90+ rate within each vintage -----------------
--- SUM(n_90plus) OVER (PARTITION BY origination_month ORDER BY months_on_book)
--- is a running total: "how many of this vintage have *ever* hit 90+ so far".
--- Dividing by the vintage's original size gives the cumulative default curve.
+-- Running total of ever-90+ loans per vintage, divided by vintage size.
 vintage AS (
     SELECT
         origination_month,
