@@ -26,8 +26,7 @@
 -- ============================================================================
 
 -- --- Step 1: build one row per observed month-to-month transition -------------
--- LAG() would work too; the self-join is used here because it makes the
--- pairing (t, t+1) explicit and easy to audit row by row.
+-- Self-join (t, t+1) makes the pairing explicit and auditable row by row.
 WITH transitions AS (
     SELECT
         a.dpd_bucket AS bucket_from,
