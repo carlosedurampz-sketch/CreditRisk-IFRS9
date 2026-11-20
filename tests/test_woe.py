@@ -5,7 +5,7 @@ import pandas as pd
 from src.woe import WoeEncoder, iv_strength
 
 
-def test_woe_iv_is_non_negative_and_detects_signal():
+def test_woe_iv_is_non_negative_and_detects_signal() -> None:
     # Strong signal: low x -> almost never default, high x -> often default.
     rng = np.random.default_rng(0)
     x = rng.normal(0, 1, 2000)
@@ -18,7 +18,7 @@ def test_woe_iv_is_non_negative_and_detects_signal():
     assert woe_values[0] > woe_values[-1]
 
 
-def test_woe_transform_shape_and_unseen_category():
+def test_woe_transform_shape_and_unseen_category() -> None:
     train = pd.DataFrame({
         "grade": ["A", "A", "B", "B", "C", "C"] * 100,
         "dti": np.tile([10.0, 20.0, 30.0], 200),
@@ -34,7 +34,7 @@ def test_woe_transform_shape_and_unseen_category():
     assert np.isfinite(out.values).all()
 
 
-def test_iv_strength_labels():
+def test_iv_strength_labels() -> None:
     assert iv_strength(0.01) == "unpredictive"
     assert iv_strength(0.05) == "weak"
     assert iv_strength(0.2) == "medium"
