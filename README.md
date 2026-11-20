@@ -1,55 +1,19 @@
 # CreditRisk-IFRS9 — Portfolio Management, Vintage Analysis & Expected Loss
 
-> **Resumen en español.** Sistema integral de análisis y modelado de riesgo de crédito:
-> auditoría de mora en SQL (curvas de cosechas y matrices de transición), scorecard
-> de probabilidad de incumplimiento (PD) con Weight of Evidence, pérdida esperada
-> bajo lógica IFRS 9 / Basilea, y monitoreo de estabilidad poblacional (PSI).
-> Corre end-to-end con datos sintéticos realistas — sin descargar nada — y documenta
-> cómo reproducirlo con datos reales (LendingClub / Home Credit).
-> **Todas las métricas de este README provienen de datos sintéticos y son
-> ilustrativas**: muestran que el pipeline funciona y cómo se interpretan los
-> resultados, no el desempeño de ninguna cartera real.
-
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org)
+[![SQL](https://img.shields.io/badge/SQL-SQLite%20%7C%20PostgreSQL-blue)](sql/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## About the author / Sobre el autor
+[Read the Spanish version](README.es.md)
 
-I am **Carlos Eduardo Ramírez Pérez**, a physicist in the process of obtaining my
-degree at UAM (Universidad Autónoma Metropolitana, 2022–2026), with a prior
-technical degree in Electronics (CBTis No. 003, Tlaxcala). I am building this
-portfolio to move into credit-risk / data roles in banking and fintech in Mexico.
-**I have not worked in a bank** — this project is applied learning, and I say so
-plainly, because in risk modelling credibility starts with stating what you do
-and do not know.
-
-What I do bring, and what this project is built on:
-
-- **Mathematical and statistical modelling from physics.** My degree trained me
-  in stochastic processes, numerical methods, and fitting models to noisy data
-  and then *validating* them — the same discipline a PD model needs (calibration,
-  out-of-time testing, stability monitoring). I program in Python (advanced),
-  R (advanced), C/C++ (advanced) and Fortran 90 (intermediate).
-- **Calibration-grade rigour from metrology.** In 2026 I worked at **INCYMED**,
-  calibrating pressure, temperature and electrical instruments in a laboratory
-  accredited under **ISO/IEC 17025 (PJLA)**, authorised to execute and review
-  calibrations. That work is traceability, reproducibility and auditable
-  documentation — exactly what model validation in a regulated bank demands:
-  every number in this repo can be traced to the code and seed that produced it.
-- **Teaching.** As State Delegate for the Mexican Physics Olympiad (CMF,
-  2021–2022) I explained quantitative ideas to students — a skill I use here in
-  the heavily commented SQL and in the README itself.
-- **SQL is the skill I am deliberately strengthening with this project**
-  (my starting level was basic). The queries in `sql/` are written as a learning
-  artefact: every CTE and window function is commented in plain language, and
-  `scripts/check_sql.py` proves they run and return sensible results on the
-  synthetic data. I am not presenting myself as a SQL expert — I am showing
-  the work of becoming one.
-- **Languages & courses.** English B2; Data Science with R (UNAM), Python I
-  (PUC Chile), a 4-course Big Data series, Introduction to Statistics
-  (Stanford Online / Coursera).
-
----
+End-to-end credit-risk analytics: SQL portfolio audit (vintage curves and
+transition matrices), a Weight of Evidence PD scorecard, expected loss under
+IFRS 9 / Basel logic, and population-stability (PSI) monitoring. It runs
+end-to-end on realistic synthetic data — no download required — and documents
+how to reproduce it with real data (LendingClub / Home Credit).
+**All metrics in this README come from synthetic data and are illustrative**:
+they show that the pipeline works and how to interpret the results, not the
+performance of any real portfolio.
 
 ## What this project does
 
@@ -70,12 +34,13 @@ synthetic loans ──► SQL audit ──► WoE scorecard ──► Expected l
 
 ```
 CreditRisk-IFRS9/
-├── README.md
+├── README.md / README.es.md
 ├── LICENSE (MIT)
 ├── requirements.txt
 ├── Makefile / run_all.sh          # one-command end-to-end run
+├── .github/workflows/ci.yml       # pytest on every push (Python 3.11)
 ├── sql/
-│   ├── 01_vintage_analysis.sql    # vintage (cosecha) curves by MOB
+│   ├── 01_vintage_analysis.sql    # vintage curves by MOB
 │   ├── 02_roll_rates.sql          # DPD transition matrices
 │   └── 03_portfolio_kpis.sql      # monthly management-pack KPIs
 ├── src/
@@ -92,7 +57,9 @@ CreditRisk-IFRS9/
 │   └── check_sql.py               # validates sql/*.sql on SQLite
 ├── tests/
 │   ├── test_woe.py                # WoE / IV tests
-│   └── test_expected_loss.py      # EL formula, stress, PSI tests
+│   ├── test_expected_loss.py      # EL formula, stress, PSI tests
+│   └── test_sql.py                # SQL validation tests (via check_sql)
+├── docs/images/                   # charts embedded in the READMEs
 ├── data/synthetic/                # generated (git-ignored, regenerable)
 └── outputs/                       # metrics JSON, deciles CSV, PNG charts
 ```
@@ -100,7 +67,7 @@ CreditRisk-IFRS9/
 ## Quick start
 
 ```bash
-git clone <this-repo> && cd CreditRisk-IFRS9
+git clone https://github.com/carlosedurampz-sketch/CreditRisk-IFRS9.git && cd CreditRisk-IFRS9
 bash run_all.sh            # creates .venv, installs deps, runs tests + pipeline
 # — or step by step —
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
@@ -120,6 +87,10 @@ To validate the SQL separately (SQLite, standard library only):
 # loaded loans: 20,000 rows / loaded snapshots: 500,000 rows
 # OK 01_vintage_analysis.sql / OK 02_roll_rates.sql / OK 03_portfolio_kpis.sql
 ```
+
+The same validation runs in CI through `tests/test_sql.py`, which executes
+every query in `sql/` against a small in-memory SQLite fixture and asserts
+that each statement returns rows.
 
 ## Dataset
 
@@ -251,9 +222,9 @@ data, not a finding about real borrowers.)
 The auditable model wins on this synthetic data — the honest result, and a
 useful one: on noisy data with mostly monotone drivers, a regularised WoE
 logistic beats the gradient-boosting challenger on ranking *and* calibration.
-I report the challenger's loss rather than tuning it until it wins.
+The challenger's loss is reported rather than tuning it until it wins.
 
-![ROC curve](outputs/roc_curve.png)
+![ROC curve](docs/images/roc_curve.png)
 
 **Information Value** (top drivers): DTI 0.224 (medium), grade 0.107 (medium),
 bureau score 0.101 (medium), interest rate 0.097 (weak). Full table:
@@ -276,15 +247,15 @@ bureau score 0.101 (medium), interest rate 0.097 (weak). Full table:
 
 The ranking is broadly monotone with small-sample inversions (deciles 2–3
 and 4–5) — with ~30–60 defaults per decile, a ±2 pp wobble is sampling noise,
-and I leave it visible rather than smoothing it away. The top decile captures
+and it is left visible rather than smoothed away. The top decile captures
 20.3% of all defaults; the top three deciles capture 51.2%.
 
-![Decile calibration](outputs/decile_calibration.png)
+![Decile calibration](docs/images/decile_calibration.png)
 
 ### Expected loss and stress (test portfolio)
 
 | Scenario | PD multiplier | LGD shift | Total EL | EL rate |
-|---|---:|---:|---:|---:|
+|---|---:|---:|---:|---:|---:|
 | Base | ×1.0 | +0 pp | **$4,120,897** | **576 bps** |
 | Adverse | ×1.5 | +10 pp | $7,387,598 | 1,033 bps |
 | Severe | ×2.0 | +20 pp | $11,458,468 | 1,603 bps |
@@ -301,12 +272,12 @@ the scored population is stable over the test window, as expected for
 synthetic data with no drift injected. The monitoring code is the deliverable
 here, not the (uneventful) reading.
 
-![Monthly PSI](outputs/psi_monthly.png)
+![Monthly PSI](docs/images/psi_monthly.png)
 
 ## Limitations — stated, not buried
 
 1. **Synthetic data.** All results are illustrative. The DGP encodes the
-   qualitative relationships I expect (higher DTI → higher risk) but no real
+   qualitative relationships expected (higher DTI → higher risk) but no real
    portfolio behaves exactly like this; in particular, the generator's
    one-bucket-at-a-time cures and near-absorbing 90+ are simplifications.
 2. **No IFRS 9 staging.** There is no Stage 1/2/3 classification, no
@@ -322,10 +293,6 @@ here, not the (uneventful) reading.
 5. **Modest discrimination.** KS 0.255 / Gini 0.312 on synthetic data is a
    realistic, mid-range scorecard — not a tuned-to-impress number. With real
    data, bureau and behavioural variables would normally add more signal.
-6. **SQL is a learning artefact** (see "About the author"): the queries are
-   correct and validated, but written by someone strengthening SQL, not by a
-   senior SQL developer. Reviewers are invited to read the comments and judge
-   the reasoning.
 
 ## Next steps
 
@@ -341,7 +308,7 @@ here, not the (uneventful) reading.
 ## Tests
 
 ```bash
-.venv/bin/python -m pytest tests/ -q   # 7 passed
+.venv/bin/python -m pytest tests/ -q
 ```
 
 `test_woe.py` checks that IV detects a real signal, that WoE is monotone in
@@ -349,7 +316,9 @@ that signal, and that unseen categories map to a neutral WoE of 0.
 `test_expected_loss.py` checks `EL = PD × LGD × EAD` on hand-computed cases,
 that stress scenarios increase EL monotonically, and that PSI is 0 for
 identical distributions and > 0.25 for a large shift.
+`test_sql.py` executes every query in `sql/` against a small in-memory
+SQLite fixture and asserts each statement runs and returns rows.
 
-## License
+## Author & License
 
-MIT — see [LICENSE](LICENSE).
+Built by **Carlos Eduardo Ramírez Pérez** — Physicist (UAM) focused on quantitative modeling, risk analytics, and data science. Licensed under the MIT License.
