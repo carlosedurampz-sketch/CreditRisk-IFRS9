@@ -11,6 +11,9 @@ outputs/
 *.csv
 !tests/**
 
+# Charts embedded in the READMEs are tracked on purpose.
+!docs/images/*.png
+
 # Notebooks
 .ipynb_checkpoints/
 
