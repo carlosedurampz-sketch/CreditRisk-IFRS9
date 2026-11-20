@@ -23,7 +23,6 @@ Design choices, and why
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
 import matplotlib
@@ -54,7 +53,7 @@ def load_loans(path: Path | None = None) -> pd.DataFrame:
     return df
 
 
-def evaluate(y_true, y_score, name: str) -> dict:
+def evaluate(y_true: np.ndarray, y_score: np.ndarray, name: str) -> dict[str, float | int | str]:
     return {
         "model": name,
         "n": int(len(y_true)),
@@ -67,7 +66,7 @@ def evaluate(y_true, y_score, name: str) -> dict:
     }
 
 
-def plot_roc(y_true, scores: dict[str, np.ndarray], out: Path) -> None:
+def plot_roc(y_true: np.ndarray, scores: dict[str, np.ndarray], out: Path) -> None:
     plt.figure(figsize=(7, 5))
     for name, score in scores.items():
         fpr, tpr, _ = roc_curve(y_true, score)
@@ -97,7 +96,7 @@ def plot_deciles(deciles: pd.DataFrame, out: Path) -> None:
     plt.close()
 
 
-def train_and_evaluate(loans: pd.DataFrame, outputs: Path) -> dict:
+def train_and_evaluate(loans: pd.DataFrame, outputs: Path) -> dict[str, object]:
     outputs.mkdir(parents=True, exist_ok=True)
     loans = loans.copy()
     loans["origination_month"] = pd.PeriodIndex(loans["origination_month"], freq="M")
@@ -125,7 +124,7 @@ def train_and_evaluate(loans: pd.DataFrame, outputs: Path) -> dict:
     lr.fit(X_train_woe, y_train)
     pred_lr = lr.predict_proba(X_test_woe)[:, 1]
 
-    results: dict = {}
+    results: dict[str, dict[str, float | int | str]] = {}
     results["logistic_woe"] = evaluate(y_test, pred_lr, "logistic_woe")
     scores = {"Logistic (WoE)": pred_lr}
 
