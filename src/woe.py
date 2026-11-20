@@ -60,7 +60,7 @@ class WoeEncoder:
         return self
 
     @staticmethod
-    def _quantile_edges(series: pd.Series) -> list:
+    def _quantile_edges(series: pd.Series) -> list[float]:
         clean = series.dropna()
         quantiles = np.linspace(0, 1, 6)  # up to 5 bins by default
         edges = sorted(set(np.quantile(clean, quantiles).tolist()))
@@ -71,7 +71,7 @@ class WoeEncoder:
         return edges
 
     @staticmethod
-    def _woe_for_bins(binned: pd.Series, y: pd.Series) -> tuple[dict, float]:
+    def _woe_for_bins(binned: pd.Series, y: pd.Series) -> tuple[dict[str, float], float]:
         frame = pd.DataFrame({"bin": binned.astype(str), "y": y.values})
         grouped = frame.groupby("bin")["y"].agg(["count", "sum"])
         grouped["good"] = grouped["count"] - grouped["sum"]
