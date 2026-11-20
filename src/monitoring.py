@@ -69,7 +69,7 @@ def psi_by_period(scores: pd.Series, periods: pd.Series, bins: np.ndarray) -> pd
     return pd.DataFrame(rows)
 
 
-def run(predictions_path: Path, outputs: Path) -> dict:
+def run(predictions_path: Path, outputs: Path) -> dict[str, object]:
     outputs.mkdir(parents=True, exist_ok=True)
     preds = pd.read_csv(predictions_path)
     preds["origination_month"] = pd.PeriodIndex(preds["origination_month"], freq="M")
